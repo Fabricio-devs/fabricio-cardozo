@@ -21,12 +21,14 @@
     --gg-top-h: {{ section.settings.top_image_height }}px;
     --gg-bottom-w: {{ section.settings.bottom_image_width }}px;
     --gg-bottom-h: {{ section.settings.bottom_image_height }}px;
+    --gg-choose-bg: {{ section.settings.choose_bg }};
+    --gg-page-bg: {{ section.settings.page_bg }};
   "
 >
   {% comment %}
-  =========================
+  ===========================================================
     TOP BAR (brand / tagline / CTA)
-  =========================
+  ===========================================================
   {% endcomment %}
   <div class="gg-topbar">
     <div class="gg-topbar__inner">
@@ -39,7 +41,7 @@
       </div>
 
       <div class="gg-topbar__right">
-        <a class="gg-btn gg-btn--choose" href="{{ section.settings.choose_link }}">
+        <a class="gg-btn gg-btn--choose gg-btn--tilt" href="{{ section.settings.choose_link }}">
           <span class="gg-btn__label">{{ section.settings.choose_text }}</span>
           <span class="gg-btn__arrow" aria-hidden="true">→</span>
         </a>
@@ -48,16 +50,17 @@
   </div>
 
   {% comment %}
-  =========================
+  ===========================================================
     HERO CANVAS (images + content)
-  =========================
+  ===========================================================
   {% endcomment %}
   <div class="gg-canvas">
     <div class="gg-canvas__inner">
+
       {% comment %}
-      -------------------------
-        IMAGE LAYER
-      -------------------------
+      -----------------------------------------------------------
+        IMAGE LAYER (behind content)
+      -----------------------------------------------------------
       {% endcomment %}
       <div class="gg-images" aria-hidden="true">
         {% comment %} TOP IMAGE (1440x390) {% endcomment %}
@@ -96,9 +99,9 @@
       </div>
 
       {% comment %}
-      -------------------------
+      -----------------------------------------------------------
         CONTENT LAYER (left)
-      -------------------------
+      -----------------------------------------------------------
       {% endcomment %}
       <div class="gg-content">
         <h1 class="gg-title">{{ section.settings.title }}</h1>
@@ -107,20 +110,21 @@
           {{ section.settings.description }}
         </p>
 
-        <a class="gg-btn gg-btn--shop" href="{{ section.settings.shop_link }}">
+        <a class="gg-btn gg-btn--shop gg-btn--tilt" href="{{ section.settings.shop_link }}">
           <span class="gg-btn__label">{{ section.settings.shop_text }}</span>
           <span class="gg-btn__arrow" aria-hidden="true">→</span>
         </a>
       </div>
 
       {% comment %}
-      -------------------------
-        FOOTER LINE (bottom)
-      -------------------------
+      -----------------------------------------------------------
+        FOOTER LINE (bottom text)
+      -----------------------------------------------------------
       {% endcomment %}
       <div class="gg-footerline">
         {{ section.settings.footer_text }}
       </div>
+
     </div>
   </div>
 </section>
@@ -131,23 +135,23 @@
 ===========================================================
 {% endcomment %}
 <style>
-  /* =========================
+  /* ===========================================================
      BASE WRAPPER
-  ========================= */
-  #gg-banner-{{ section.id }} {
-    background: {{ section.settings.page_bg }};
+  =========================================================== */
+  #gg-banner-{{ section.id }}{
+    background: var(--gg-page-bg);
     color: #000;
   }
 
-  /* =========================
+  /* ===========================================================
      TOP BAR
-  ========================= */
-  #gg-banner-{{ section.id }} .gg-topbar {
-    background: transparent;
+  =========================================================== */
+  #gg-banner-{{ section.id }} .gg-topbar{
     padding: 14px 0;
+    background: transparent;
   }
 
-  #gg-banner-{{ section.id }} .gg-topbar__inner {
+  #gg-banner-{{ section.id }} .gg-topbar__inner{
     max-width: var(--gg-max-width);
     margin: 0 auto;
     padding: 0 var(--gg-pad-x);
@@ -157,86 +161,88 @@
     gap: 16px;
   }
 
-  #gg-banner-{{ section.id }} .gg-brand {
+  #gg-banner-{{ section.id }} .gg-brand{
     font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: .04em;
     text-transform: uppercase;
     font-size: 14px;
   }
 
-  #gg-banner-{{ section.id }} .gg-tagline {
+  #gg-banner-{{ section.id }} .gg-tagline{
     display: inline-block;
-    text-align: center;
     width: 100%;
+    text-align: center;
     font-size: 12px;
-    letter-spacing: 0.02em;
+    letter-spacing: .02em;
     color: #111;
   }
 
-  #gg-banner-{{ section.id }} .gg-topbar__right {
+  #gg-banner-{{ section.id }} .gg-topbar__right{
     display: flex;
     justify-content: flex-end;
   }
 
-  /* =========================
-     CANVAS (images + content)
-  ========================= */
-  #gg-banner-{{ section.id }} .gg-canvas {
-    padding: var(--gg-pad-y) 0 calc(var(--gg-pad-y) + 14px);
+  /* ===========================================================
+     CANVAS WRAPPER
+  =========================================================== */
+  #gg-banner-{{ section.id }} .gg-canvas{
+    padding: var(--gg-pad-y) 0 calc(var(--gg-pad-y) + 18px);
     position: relative;
   }
 
-  #gg-banner-{{ section.id }} .gg-canvas__inner {
+  #gg-banner-{{ section.id }} .gg-canvas__inner{
     max-width: var(--gg-max-width);
     margin: 0 auto;
     padding: 0 var(--gg-pad-x);
     position: relative;
-    min-height: calc(var(--gg-top-h) + 260px);
+
+    /* Important: reserve vertical space so bottom overlay has room */
+    min-height: calc(var(--gg-top-h) + 360px);
   }
 
-  /* =========================
+  /* ===========================================================
      IMAGE LAYER
-  ========================= */
-  #gg-banner-{{ section.id }} .gg-images {
+  =========================================================== */
+  #gg-banner-{{ section.id }} .gg-images{
     position: relative;
     width: 100%;
+    z-index: 1; /* behind content */
   }
 
-  /* TOP IMAGE: band across the top (1440x390) */
-  #gg-banner-{{ section.id }} .gg-img--top {
+  /* TOP IMAGE: band across the top */
+  #gg-banner-{{ section.id }} .gg-img--top{
     width: 100%;
     height: var(--gg-top-h);
     overflow: hidden;
-    border: 0;
   }
 
-  #gg-banner-{{ section.id }} .gg-img--top .gg-img__el {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* important for band crop */
-    display: block;
-  }
-
-  /* BOTTOM IMAGE: bottom-right overlay (890x402) */
-  #gg-banner-{{ section.id }} .gg-img--bottom {
-    position: absolute;
-    right: 0;
-    bottom: 34px; /* leaves room for footer line */
-    width: min(var(--gg-bottom-w), 62%);
-    height: var(--gg-bottom-h);
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  #gg-banner-{{ section.id }} .gg-img--bottom .gg-img__el {
+  #gg-banner-{{ section.id }} .gg-img--top .gg-img__el{
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
 
-  #gg-banner-{{ section.id }} .gg-img__placeholder {
+  /* BOTTOM IMAGE: bottom-right overlay (like Figma) */
+  #gg-banner-{{ section.id }} .gg-img--bottom{
+    position: absolute;
+    right: 0;
+    bottom: 34px; /* leave space for footer line */
+    width: min(var(--gg-bottom-w), 62%);
+    height: var(--gg-bottom-h);
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  #gg-banner-{{ section.id }} .gg-img--bottom .gg-img__el{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  #gg-banner-{{ section.id }} .gg-img__placeholder{
     width: 100%;
     height: 100%;
     background: #f2f2f2;
@@ -247,18 +253,18 @@
     color: #555;
   }
 
-  /* =========================
+  /* ===========================================================
      CONTENT (left)
-  ========================= */
-  #gg-banner-{{ section.id }} .gg-content {
+  =========================================================== */
+  #gg-banner-{{ section.id }} .gg-content{
     position: absolute;
     left: var(--gg-pad-x);
     top: calc(var(--gg-top-h) + 26px);
     max-width: 520px;
-    z-index: 2;
+    z-index: 2; /* above images */
   }
 
-  #gg-banner-{{ section.id }} .gg-title {
+  #gg-banner-{{ section.id }} .gg-title{
     margin: 0 0 14px;
     font-family: ui-serif, Georgia, "Times New Roman", Times, serif;
     font-weight: 700;
@@ -267,7 +273,7 @@
     letter-spacing: -0.01em;
   }
 
-  #gg-banner-{{ section.id }} .gg-desc {
+  #gg-banner-{{ section.id }} .gg-desc{
     margin: 0 0 22px;
     max-width: 460px;
     font-size: 14px;
@@ -275,37 +281,38 @@
     color: #111;
   }
 
-  /* =========================
-     FOOTER LINE (bottom text)
-  ========================= */
-  #gg-banner-{{ section.id }} .gg-footerline {
+  /* ===========================================================
+     FOOTER LINE
+  =========================================================== */
+  #gg-banner-{{ section.id }} .gg-footerline{
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     bottom: 10px;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #222;
-    text-align: center;
     width: 100%;
     padding: 0 12px;
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #222;
+    opacity: .9;
     z-index: 2;
-    opacity: 0.9;
     pointer-events: none;
   }
 
-  /* =========================
-     BUTTONS (animation like Figma)
-  ========================= */
-  #gg-banner-{{ section.id }} .gg-btn {
+  /* ===========================================================
+     BUTTONS (tilt + shadow + hover)
+  =========================================================== */
+  #gg-banner-{{ section.id }} .gg-btn{
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 14px;
     text-decoration: none;
     border: 1px solid #000;
     font-size: 12px;
-    letter-spacing: 0.06em;
+    letter-spacing: .06em;
     text-transform: uppercase;
     padding: 12px 18px;
     transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease, color 140ms ease;
@@ -313,78 +320,89 @@
     user-select: none;
   }
 
+  /* “tilt” look */
+  #gg-banner-{{ section.id }} .gg-btn--tilt{
+    transform: skewX(-10deg);
+    box-shadow: 8px 10px 0 rgba(0,0,0,0.18);
+  }
+  #gg-banner-{{ section.id }} .gg-btn--tilt > *{
+    transform: skewX(10deg); /* un-skew label/arrow */
+  }
+
   /* Shop button (black) */
-  #gg-banner-{{ section.id }} .gg-btn--shop {
+  #gg-banner-{{ section.id }} .gg-btn--shop{
     background: #000;
     color: #fff;
   }
 
   /* Choose button (yellow) */
-  #gg-banner-{{ section.id }} .gg-btn--choose {
-    background: {{ section.settings.choose_bg }};
+  #gg-banner-{{ section.id }} .gg-btn--choose{
+    background: var(--gg-choose-bg);
     color: #000;
   }
 
   /* Arrow micro-move */
-  #gg-banner-{{ section.id }} .gg-btn__arrow {
+  #gg-banner-{{ section.id }} .gg-btn__arrow{
     display: inline-block;
     transform: translateX(0);
     transition: transform 140ms ease;
   }
 
-  /* Hover animation: lift + arrow slide (matches the “tilt/lift” feel) */
-  #gg-banner-{{ section.id }} .gg-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+  /* Hover animation: lift + arrow slide */
+  #gg-banner-{{ section.id }} .gg-btn:hover{
+    transform: skewX(-10deg) translateY(-2px);
+    box-shadow: 10px 14px 0 rgba(0,0,0,0.16);
   }
-  #gg-banner-{{ section.id }} .gg-btn:hover .gg-btn__arrow {
+  #gg-banner-{{ section.id }} .gg-btn:hover .gg-btn__arrow{
     transform: translateX(4px);
   }
 
   /* Active: press */
-  #gg-banner-{{ section.id }} .gg-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+  #gg-banner-{{ section.id }} .gg-btn:active{
+    transform: skewX(-10deg) translateY(0);
+    box-shadow: 6px 8px 0 rgba(0,0,0,0.14);
   }
 
-  /* =========================
+  /* ===========================================================
      MOBILE
-  ========================= */
-  @media (max-width: 920px) {
-    #gg-banner-{{ section.id }} .gg-topbar__inner {
+  =========================================================== */
+  @media (max-width: 920px){
+    #gg-banner-{{ section.id }} .gg-topbar__inner{
       grid-template-columns: 1fr;
       justify-items: start;
     }
+
     #gg-banner-{{ section.id }} .gg-topbar__center,
-    #gg-banner-{{ section.id }} .gg-topbar__right {
+    #gg-banner-{{ section.id }} .gg-topbar__right{
       width: 100%;
     }
-    #gg-banner-{{ section.id }} .gg-topbar__right {
+
+    #gg-banner-{{ section.id }} .gg-topbar__right{
       justify-content: flex-start;
     }
 
-    #gg-banner-{{ section.id }} .gg-canvas__inner {
+    #gg-banner-{{ section.id }} .gg-canvas__inner{
       min-height: auto;
       padding: 0 16px;
     }
 
-    /* Make images stack nicely */
-    #gg-banner-{{ section.id }} .gg-img--top {
+    /* Keep the band visible on mobile */
+    #gg-banner-{{ section.id }} .gg-img--top{
       height: 320px;
     }
 
-    #gg-banner-{{ section.id }} .gg-img--bottom {
+    /* Bottom image becomes stacked */
+    #gg-banner-{{ section.id }} .gg-img--bottom{
       position: relative;
+      right: auto;
+      bottom: auto;
       width: 100%;
       height: 260px;
-      bottom: auto;
-      right: auto;
       margin-top: 14px;
-      pointer-events: none;
     }
 
-    /* Content becomes normal flow */
-    #gg-banner-{{ section.id }} .gg-content {
+    /* Content becomes flow */
+    #gg-banner-{{ section.id }} .gg-content{
       position: relative;
       left: auto;
       top: auto;
@@ -392,7 +410,7 @@
       max-width: 560px;
     }
 
-    #gg-banner-{{ section.id }} .gg-footerline {
+    #gg-banner-{{ section.id }} .gg-footerline{
       position: relative;
       left: auto;
       transform: none;
@@ -404,7 +422,7 @@
 
 {% comment %}
 ===========================================================
-  JS (vanilla) — optional: keep focus/keyboard nice
+  JS (vanilla) — minimal focus handling
 ===========================================================
 {% endcomment %}
 <script>
@@ -415,7 +433,6 @@
     var root = document.getElementById("gg-banner-{{ section.id }}");
     if (!root) return;
 
-    // Keyboard focus style (simple)
     var btns = root.querySelectorAll(".gg-btn");
     btns.forEach(function (btn) {
       btn.addEventListener("focus", function () {
@@ -486,38 +503,22 @@
 
     { "type": "header", "content": "Images (match Figma placement)" },
 
-    {
-      "type": "image_picker",
-      "id": "top_image",
-      "label": "Top image (1440×390)"
-    },
-    {
-      "type": "text",
-      "id": "top_image_alt",
-      "label": "Top image alt text",
-      "default": "Gift guide banner image"
-    },
+    { "type": "image_picker", "id": "top_image", "label": "Top image (1440×390)" },
+    { "type": "text", "id": "top_image_alt", "label": "Top image alt text", "default": "Gift guide banner image" },
+
     {
       "type": "range",
       "id": "top_image_height",
       "label": "Top image height (px)",
       "min": 260,
       "max": 520,
-      "step": 2,
+      "step": 4,
       "default": 390
     },
 
-    {
-      "type": "image_picker",
-      "id": "bottom_image",
-      "label": "Bottom-right image (890×402)"
-    },
-    {
-      "type": "text",
-      "id": "bottom_image_alt",
-      "label": "Bottom image alt text",
-      "default": "Gift guide secondary image"
-    },
+    { "type": "image_picker", "id": "bottom_image", "label": "Bottom-right image (890×402)" },
+    { "type": "text", "id": "bottom_image_alt", "label": "Bottom image alt text", "default": "Gift guide secondary image" },
+
     {
       "type": "range",
       "id": "bottom_image_width",
@@ -533,14 +534,12 @@
       "label": "Bottom image height (px)",
       "min": 220,
       "max": 520,
-      "step": 2,
+      "step": 4,
       "default": 402
     }
   ],
   "presets": [
-    {
-      "name": "GG Banner"
-    }
+    { "name": "GG Banner" }
   ]
 }
 {% endschema %}
