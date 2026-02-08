@@ -148,7 +148,7 @@
   =========================================================== */
   #gg-banner-{{ section.id }} .gg-topbar{
     padding: 14px 0;
-    background: transparent;
+    background: #f5f6f7;
   }
 
   #gg-banner-{{ section.id }} .gg-topbar__inner{
@@ -194,11 +194,16 @@
   #gg-banner-{{ section.id }} .gg-canvas__inner{
     max-width: var(--gg-max-width);
     margin: 0 auto;
-    padding: 0 var(--gg-pad-x);
+    padding: var(--gg-pad-y) 0 calc(var(--gg-pad-y) + 140px);
     position: relative;
 
     /* Important: reserve vertical space so bottom overlay has room */
-    min-height: calc(var(--gg-top-h) + 360px);
+    min-height: calc(
+        var(--gg-top-h)
+        + var(--gg-bottom-h)
+        + 10px
+        + 10px
+    );
   }
 
   /* ===========================================================
@@ -301,7 +306,7 @@
     font-size: 10px;
     letter-spacing: .12em;
     text-transform: uppercase;
-    color: #222;
+    color: #f5f6f7;
     opacity: .9;
     z-index: 2;
     pointer-events: none;
