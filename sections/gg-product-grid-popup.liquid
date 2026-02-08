@@ -1,796 +1,403 @@
 {% comment %}
-================================================================================
-  GG Product Grid + Popup (matches provided screenshot)
-  - 6 selectable products (Theme Customizer)
-  - Modal layout/styling aligned to screenshot
-  - Option "Color" (case-insensitive) renders as segmented buttons (2 columns)
-  - Other options render as select dropdown with caret
-  - Add to cart via /cart/add.js (multi-add supported)
-  - Bundle rule (optional): if selected variant options include BOTH "Black" + "Medium",
-    also auto-add the configured bundle product (first available variant).
-  - Scoped CSS/JS per section id to avoid conflicts
-================================================================================
+  GG Product Grid Popup (estilo Dawn)
+  - Renderiza un heading + un botón/trigger
+  - Abre un popup con un grid de productos elegidos en el customizer (Product 1..6)
+  - Usa snippets nativos de Dawn: card-product + quick-add si corresponde
+  - Incluye settings típicos de Dawn para cards
+  - Incluye setting "color" (como pediste) para fondo del popup
 {% endcomment %}
 
-{% liquid
-  comment
-    Currency code:
-    - Prefer cart.currency.iso_code when available; fallback to shop.currency.
-  endcomment
-  assign gg_currency = cart.currency.iso_code | default: shop.currency
+{{ 'template-collection.css' | asset_url | stylesheet_tag }}
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
 
-  comment
-    Bundle product:
-    - If set, we store its first available variant id.
-    - If not set, bundle_variant_id remains blank and rule is disabled.
-  endcomment
-  assign bundle_variant_id = ''
-  if section.settings.bundle_product != blank
-    assign bundle_variant_id = section.settings.bundle_product.selected_or_first_available_variant.id
-  endif
+{% if section.settings.image_shape == 'blob' %}
+  {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
+{%- endif -%}
 
-  comment
-    Collect six products from settings into an array
-  endcomment
-  assign gg_products = '' | split: ','
-  assign gg_products = gg_products | push: section.settings.product_1
-  assign gg_products = gg_products | push: section.settings.product_2
-  assign gg_products = gg_products | push: section.settings.product_3
-  assign gg_products = gg_products | push: section.settings.product_4
-  assign gg_products = gg_products | push: section.settings.product_5
-  assign gg_products = gg_products | push: section.settings.product_6
-%}
+{%- unless section.settings.quick_add == 'none' -%}
+  {{ 'quick-add.css' | asset_url | stylesheet_tag }}
+{%- endunless -%}
 
-<section id="gg-grid-{{ section.id }}" class="gg-grid" aria-label="GG Product Grid">
-  <div class="gg-grid__inner">
-    {% if section.settings.heading != blank %}
-      <h2 class="gg-grid__heading">{{ section.settings.heading }}</h2>
-    {% endif %}
+{%- if section.settings.quick_add == 'standard' -%}
+  <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
+{%- elsif section.settings.quick_add == 'bulk' -%}
+  <script src="{{ 'quick-add-bulk.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'quick-add.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
 
-    <div class="gg-grid__wrap" role="list">
-      {% for p in gg_products %}
-        {% if p != blank %}
-          {% assign img = p.featured_media %}
-          <button
-            type="button"
-            class="gg-card"
-            role="listitem"
-            data-gg-open
-            data-handle="{{ p.handle }}"
-            aria-label="Open {{ p.title | escape }}"
-          >
-            <div class="gg-card__media">
-              {% if img != blank %}
-                {{
-                  img
-                  | image_url: width: 1200
-                  | image_tag:
-                    loading: 'lazy',
-                    decoding: 'async',
-                    class: 'gg-card__img',
-                    alt: img.alt | default: p.title
-                }}
-              {% else %}
-                <div class="gg-card__ph">No image</div>
-              {% endif %}
+{%- liquid
+  assign products_to_render = 0
+  for i in (1..6)
+    assign key = 'product_' | append: i
+    if section.settings[key] != blank
+      assign products_to_render = products_to_render | plus: 1
+    endif
+  endfor
+-%}
 
-              <span class="gg-card__plus" aria-hidden="true">+</span>
-            </div>
-          </button>
-        {% else %}
-          <div class="gg-card gg-card--empty" role="listitem" aria-hidden="true">
-            <div class="gg-card__media">
-              <div class="gg-card__ph">Select product</div>
-            </div>
-          </div>
-        {% endif %}
-      {% endfor %}
-    </div>
-  </div>
-
-  {% comment %} MODAL {% endcomment %}
-  <div class="gg-modal" data-gg-modal hidden aria-hidden="true">
-    <div class="gg-modal__backdrop" data-gg-close></div>
-
-    <div class="gg-modal__panel" role="dialog" aria-modal="true" aria-label="Product details">
-      <button class="gg-modal__x" type="button" aria-label="Close" data-gg-close>×</button>
-
-      <div class="gg-modal__body">
-        <div class="gg-modal__media">
-          <img class="gg-modal__img" data-gg-img alt="" />
-        </div>
-
-        <div class="gg-modal__info">
-          <div class="gg-modal__title" data-gg-title></div>
-          <div class="gg-modal__price" data-gg-price></div>
-          <div class="gg-modal__desc" data-gg-desc></div>
-
-          <div class="gg-modal__opts" data-gg-options></div>
-
-          <button class="gg-modal__cta" type="button" data-gg-add>
-            <span>ADD TO CART</span>
-            <span class="gg-modal__cta-arrow" aria-hidden="true">→</span>
-          </button>
-
-          <div class="gg-modal__msg" data-gg-msg aria-live="polite"></div>
-        </div>
+<section
+  class="gg-product-grid-popup color-{{ section.settings.color_scheme }} gradient"
+  id="gg-product-grid-popup-{{ section.id }}"
+  data-section-id="{{ section.id }}"
+>
+  <div class="page-width">
+    {%- if section.settings.heading != blank -%}
+      <div class="title-wrapper-with-link">
+        <h2 class="title inline-richtext">
+          {{ section.settings.heading }}
+        </h2>
       </div>
+    {%- endif -%}
+
+    {% comment %}
+      Trigger para abrir el popup
+      - Si querés que se abra por otro trigger (imagen/banner), se ajusta acá.
+    {% endcomment %}
+    <div class="gg-popup-trigger-wrap">
+      <button
+        type="button"
+        class="button"
+        data-gg-popup-open
+        {% if products_to_render == 0 %}disabled{% endif %}
+      >
+        {{ section.settings.button_label }}
+      </button>
+
+      {%- if products_to_render == 0 -%}
+        <p class="gg-popup-empty">
+          No hay productos seleccionados en el bloque.
+        </p>
+      {%- endif -%}
     </div>
   </div>
 
   {% comment %}
-    JS
-    - Fetch product JSON: /products/<handle>.js
-    - Build options dynamically:
-        * "color" => segmented buttons
-        * others  => select
-    - Compute variant from selected optionState
-    - Add to cart:
-        * selected variant
-        * + bundle variant (optional) if Black + Medium in selected variant options
+    Estructura del POPUP
+    - Overlay + Modal
+    - Se muestra con clase is-open en el section
   {% endcomment %}
-  <script>
-    (function () {
-      "use strict";
+  <div class="gg-popup-overlay" data-gg-popup-overlay></div>
 
-      var root = document.getElementById("gg-grid-{{ section.id }}");
-      if (!root) return;
+  <div
+    class="gg-popup-modal"
+    data-gg-popup-modal
+    role="dialog"
+    aria-modal="true"
+    aria-label="{{ section.settings.heading | escape }}"
+  >
+    <button
+      type="button"
+      class="gg-popup-close"
+      aria-label="Cerrar"
+      data-gg-popup-close
+    >
+      ×
+    </button>
 
-      // Elements
-      var modal = root.querySelector("[data-gg-modal]");
-      var openBtns = root.querySelectorAll("[data-gg-open]");
-      var closeBtns = root.querySelectorAll("[data-gg-close]");
-      var imgEl = root.querySelector("[data-gg-img]");
-      var titleEl = root.querySelector("[data-gg-title]");
-      var priceEl = root.querySelector("[data-gg-price]");
-      var descEl = root.querySelector("[data-gg-desc]");
-      var optsEl = root.querySelector("[data-gg-options]");
-      var addBtn = root.querySelector("[data-gg-add]");
-      var msgEl = root.querySelector("[data-gg-msg]");
+    {% comment %}
+      Header interno del popup
+    {% endcomment %}
+    <div class="gg-popup-modal__header">
+      {%- if section.settings.heading != blank -%}
+        <h3 class="gg-popup-modal__title">
+          {{ section.settings.heading }}
+        </h3>
+      {%- endif -%}
+    </div>
 
-      // State
-      var currentProduct = null;
-      var currentVariant = null;
-      var optionState = {};
-      var lastFocusEl = null;
+    {% comment %}
+      Grid de productos (Dawn style)
+      - Renderiza usando card-product
+      - Respeta opciones: show_secondary_image, show_vendor, show_rating, etc.
+      - Quick add: none/standard/bulk
+    {% endcomment %}
+    <div
+      class="grid product-grid contains-card contains-card--product contains-card--standard"
+      role="list"
+      style="--gg-popup-max-width: {{ section.settings.max_width }}px;"
+    >
+      {%- for i in (1..6) -%}
+        {%- assign key = 'product_' | append: i -%}
+        {%- assign product_handle = section.settings[key] -%}
 
-      // Config from Liquid
-      var BUNDLE_VARIANT_ID = {{ bundle_variant_id | json }};
-      var CURRENCY_CODE = {{ gg_currency | json }};
+        {%- if product_handle != blank -%}
+          {%- assign product = all_products[product_handle] -%}
 
-      function normalize(s) {
-        return String(s || "").trim().toLowerCase();
-      }
+          {%- if product != blank -%}
+            <div class="grid__item" role="listitem">
+              {% render 'card-product',
+                card_product: product,
+                media_aspect_ratio: section.settings.image_ratio,
+                image_shape: section.settings.image_shape,
+                show_secondary_image: section.settings.show_secondary_image,
+                show_vendor: section.settings.show_vendor,
+                show_rating: section.settings.show_rating,
+                lazy_load: true,
+                quick_add: section.settings.quick_add,
+                section_id: section.id
+              %}
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
 
-      function setMsg(text, isError) {
-        msgEl.textContent = text || "";
-        msgEl.style.color = isError ? "#b00020" : "#111";
-      }
-
-      function openModal() {
-        modal.hidden = false;
-        modal.setAttribute("aria-hidden", "false");
-        document.documentElement.style.overflow = "hidden";
-      }
-
-      function closeModal() {
-        modal.hidden = true;
-        modal.setAttribute("aria-hidden", "true");
-        document.documentElement.style.overflow = "";
-
-        // Reset UI/state
-        currentProduct = null;
-        currentVariant = null;
-        optionState = {};
-        optsEl.innerHTML = "";
-
-        imgEl.removeAttribute("src");
-        imgEl.alt = "";
-        titleEl.textContent = "";
-        priceEl.textContent = "";
-        descEl.textContent = "";
-        addBtn.disabled = false;
-        setMsg("");
-
-        // Restore focus
-        if (lastFocusEl && typeof lastFocusEl.focus === "function") lastFocusEl.focus();
-        lastFocusEl = null;
-      }
-
-      function formatMoney(cents) {
-        var n = Number(cents) / 100;
-        try {
-          return new Intl.NumberFormat(undefined, { style: "currency", currency: CURRENCY_CODE }).format(n);
-        } catch (e) {
-          return n.toFixed(2);
-        }
-      }
-
-      function pickBestImage(product, variant) {
-        if (variant && variant.featured_image && variant.featured_image.src) return variant.featured_image.src;
-        if (product && product.featured_image) return product.featured_image;
-        if (product && product.images && product.images[0]) return product.images[0];
-        return "";
-      }
-
-      async function fetchProduct(handle) {
-        var url = "/products/" + encodeURIComponent(handle) + ".js";
-        var res = await fetch(url, { credentials: "same-origin" });
-        if (!res.ok) throw new Error("Failed to load product.");
-        return await res.json();
-      }
-
-      function findOptionIndexByName(product, names) {
-        for (var i = 0; i < product.options.length; i++) {
-          var optName = normalize(product.options[i]);
-          if (names.indexOf(optName) !== -1) return i;
-        }
-        return -1;
-      }
-
-      function uniqueValuesForOption(product, optionIndex) {
-        var key = "option" + (optionIndex + 1);
-        var values = [];
-        product.variants.forEach(function (v) {
-          var val = v[key];
-          if (val && values.indexOf(val) === -1) values.push(val);
-        });
-        return values;
-      }
-
-      function variantMatchesSelection(v) {
-        for (var i = 0; i < currentProduct.options.length; i++) {
-          var optName = currentProduct.options[i];
-          var key = "option" + (i + 1);
-          if ((v[key] || "") !== (optionState[optName] || "")) return false;
-        }
-        return true;
-      }
-
-      function syncVariant() {
-        if (!currentProduct) return;
-
-        var match = currentProduct.variants.find(variantMatchesSelection);
-        currentVariant = match || currentProduct.variants[0] || null;
-
-        if (!currentVariant) {
-          addBtn.disabled = true;
-          setMsg("Variant not found.", true);
-          return;
-        }
-
-        // Price
-        priceEl.textContent = formatMoney(currentVariant.price);
-
-        // Availability
-        if (currentVariant.available) {
-          addBtn.disabled = false;
-          setMsg("");
-        } else {
-          addBtn.disabled = true;
-          setMsg("This variant is sold out.", true);
-        }
-
-        // Image (updates on variant change)
-        var src = pickBestImage(currentProduct, currentVariant);
-        if (src) imgEl.src = src;
-      }
-
-      function buildOptions(product) {
-        optsEl.innerHTML = "";
-        optionState = {};
-
-        // "color" option index (case-insensitive)
-        var colorIdx = findOptionIndexByName(product, ["color", "colour"]);
-
-        // Initialize defaults: first value of each option
-        product.options.forEach(function (optName, idx) {
-          var values = uniqueValuesForOption(product, idx);
-          optionState[optName] = values[0] || "";
-        });
-
-        // Render each option block
-        product.options.forEach(function (optName, idx) {
-          var values = uniqueValuesForOption(product, idx);
-
-          var block = document.createElement("div");
-          block.className = "gg-opt";
-
-          var label = document.createElement("div");
-          label.className = "gg-opt__label";
-          label.textContent = optName;
-
-          block.appendChild(label);
-
-          // Color => segmented buttons
-          if (idx === colorIdx) {
-            var seg = document.createElement("div");
-            seg.className = "gg-seg";
-
-            values.forEach(function (val) {
-              var b = document.createElement("button");
-              b.type = "button";
-              b.className = "gg-seg__btn";
-              b.textContent = val;
-
-              if (val === optionState[optName]) b.classList.add("is-active");
-
-              b.addEventListener("click", function () {
-                optionState[optName] = val;
-
-                // Active state UI
-                seg.querySelectorAll(".gg-seg__btn").forEach(function (x) {
-                  x.classList.remove("is-active");
-                });
-                b.classList.add("is-active");
-
-                syncVariant();
-              });
-
-              seg.appendChild(b);
-            });
-
-            block.appendChild(seg);
-          } else {
-            // Others => select
-            var selectWrap = document.createElement("div");
-            selectWrap.className = "gg-select";
-
-            var select = document.createElement("select");
-            select.className = "gg-select__el";
-
-            values.forEach(function (val) {
-              var o = document.createElement("option");
-              o.value = val;
-              o.textContent = val;
-              select.appendChild(o);
-            });
-
-            select.value = optionState[optName];
-
-            select.addEventListener("change", function () {
-              optionState[optName] = select.value;
-              syncVariant();
-            });
-
-            var caret = document.createElement("span");
-            caret.className = "gg-select__caret";
-            caret.setAttribute("aria-hidden", "true");
-            caret.textContent = "▾";
-
-            selectWrap.appendChild(select);
-            selectWrap.appendChild(caret);
-            block.appendChild(selectWrap);
-          }
-
-          optsEl.appendChild(block);
-        });
-
-        // Sync initial variant after building UI
-        syncVariant();
-      }
-
-      function hasBlackAndMedium(variant) {
-        if (!variant) return false;
-        var values = [variant.option1, variant.option2, variant.option3].filter(Boolean).map(normalize);
-        return values.indexOf("black") !== -1 && values.indexOf("medium") !== -1;
-      }
-
-      async function addItems(items) {
-        var res = await fetch("/cart/add.js", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify({ items: items })
-        });
-        if (!res.ok) {
-          var text = await res.text();
-          throw new Error(text || "Add to cart failed.");
-        }
-        return await res.json();
-      }
-
-      // Open modal
-      openBtns.forEach(function (btn) {
-        btn.addEventListener("click", async function () {
-          var handle = btn.getAttribute("data-handle");
-          if (!handle) return;
-
-          lastFocusEl = btn;
-
-          try {
-            setMsg("Loading…");
-            openModal();
-
-            currentProduct = await fetchProduct(handle);
-
-            // Fill base UI
-            titleEl.textContent = currentProduct.title || "";
-            descEl.textContent = currentProduct.description || "";
-
-            // Build options -> syncVariant sets price, availability
-            buildOptions(currentProduct);
-
-            // Set image after initial sync
-            var src = pickBestImage(currentProduct, currentVariant);
-            if (src) {
-              imgEl.src = src;
-              imgEl.alt = currentProduct.title || "Product image";
-            } else {
-              imgEl.removeAttribute("src");
-              imgEl.alt = currentProduct.title || "Product image";
-            }
-
-            setMsg("");
-            var closeBtn = root.querySelector(".gg-modal__x");
-            if (closeBtn) closeBtn.focus();
-          } catch (e) {
-            setMsg("Error loading product.", true);
-          }
-        });
-      });
-
-      // Close modal
-      closeBtns.forEach(function (btn) {
-        btn.addEventListener("click", closeModal);
-      });
-
-      document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape" && modal && !modal.hidden) closeModal();
-      });
-
-      // Add to cart
-      addBtn.addEventListener("click", async function () {
-        if (!currentVariant || !currentVariant.id) return;
-
-        try {
-          addBtn.disabled = true;
-          setMsg("Adding to cart…");
-
-          var items = [{ id: currentVariant.id, quantity: 1 }];
-
-          // Bundle rule (optional)
-          if (BUNDLE_VARIANT_ID && hasBlackAndMedium(currentVariant)) {
-            items.push({ id: BUNDLE_VARIANT_ID, quantity: 1 });
-          }
-
-          await addItems(items);
-          setMsg("Added to cart.");
-        } catch (e) {
-          setMsg("Could not add to cart.", true);
-        } finally {
-          if (currentVariant && currentVariant.available) addBtn.disabled = false;
-        }
-      });
-    })();
-  </script>
+    {% comment %}
+      Contenedor necesario para Quick Add (modal interno de Dawn)
+    {% endcomment %}
+    {%- if section.settings.quick_add != 'none' -%}
+      <modal-dialog id="QuickAdd-{{ section.id }}" class="quick-add-modal">
+        <div
+          role="dialog"
+          aria-label="{{ 'products.product.choose_product_options' | t }}"
+          aria-modal="true"
+          class="quick-add-modal__content global-settings-popup"
+          tabindex="-1"
+        >
+          <button
+            id="ModalClose-{{ section.id }}"
+            type="button"
+            class="quick-add-modal__toggle"
+            aria-label="{{ 'accessibility.close' | t }}"
+          >
+            {{- 'icon-close.svg' | inline_asset_content -}}
+          </button>
+          <div id="QuickAddInfo-{{ section.id }}" class="quick-add-modal__content-info"></div>
+        </div>
+      </modal-dialog>
+    {%- endif -%}
+  </div>
 </section>
 
+{% comment %}
+  Estilos del popup (mínimos y seguros)
+  - Se apoyan en estilos base de Dawn para cards/grid
+{% endcomment %}
 <style>
-  /* =========================
-     SECTION + CONTAINER
-  ========================= */
-  #gg-grid-{{ section.id }}{
-    background: #f5f6f7;
-    padding: {{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom }}px;
+  /* Wrapper trigger */
+  #gg-product-grid-popup-{{ section.id }} .gg-popup-trigger-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
   }
 
-  #gg-grid-{{ section.id }} .gg-grid__inner{
-    max-width: {{ section.settings.max_width }}px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
-
-  #gg-grid-{{ section.id }} .gg-grid__heading{
-    margin: 0 0 14px;
-    font-size: 18px;
-    font-weight: 500;
-    color: #111;
-  }
-
-  /* =========================
-     GRID (6 blocks)
-  ========================= */
-  #gg-grid-{{ section.id }} .gg-grid__wrap{
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-  }
-
-  #gg-grid-{{ section.id }} .gg-card{
-    border: 0;
-    padding: 0;
-    background: transparent;
-    cursor: pointer;
-    display: block;
-  }
-
-  #gg-grid-{{ section.id }} .gg-card__media{
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
-    background: #e9eaeb;
-  }
-
-  #gg-grid-{{ section.id }} .gg-card__img{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  /* + icon overlay like screenshot */
-  #gg-grid-{{ section.id }} .gg-card__plus{
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    width: 18px;
-    height: 18px;
-    border-radius: 999px;
-    background: rgba(255,255,255,.92);
-    border: 1px solid rgba(0,0,0,.1);
-    display: grid;
-    place-items: center;
+  #gg-product-grid-popup-{{ section.id }} .gg-popup-empty {
+    margin: 0;
+    opacity: .7;
     font-size: 14px;
-    line-height: 1;
-    color: #111;
-    pointer-events: none;
   }
 
-  #gg-grid-{{ section.id }} .gg-card__ph{
-    width: 100%;
-    height: 100%;
-    display: grid;
-    place-items: center;
-    font-size: 12px;
-    color: #555;
-    border: 1px dashed #b8b8b8;
-  }
-
-  /* =========================
-     MODAL
-  ========================= */
-  #gg-grid-{{ section.id }} .gg-modal[hidden]{ display: none; }
-
-  #gg-grid-{{ section.id }} .gg-modal{
+  /* Overlay */
+  #gg-product-grid-popup-{{ section.id }} .gg-popup-overlay {
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    background: rgba(0,0,0,.55);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s ease, visibility .25s ease;
+    z-index: 60;
   }
 
-  #gg-grid-{{ section.id }} .gg-modal__backdrop{
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,.45);
-  }
-
-  /* Panel sizing like screenshot */
-  #gg-grid-{{ section.id }} .gg-modal__panel{
-    position: absolute;
-    left: 50%;
-    top: 20px;
-    transform: translateX(-50%);
-    width: 340px;
-    background: #fff;
-    border-radius: 0;
-    box-shadow: 0 18px 60px rgba(0,0,0,.25);
-    overflow: hidden;
-  }
-
-  #gg-grid-{{ section.id }} .gg-modal__x{
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 22px;
-    height: 22px;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
-    color: #111;
-    z-index: 2;
-  }
-
-  /* Modal inner layout */
-  #gg-grid-{{ section.id }} .gg-modal__body{
-    padding: 14px;
-    display: grid;
-    grid-template-columns: 90px 1fr;
-    gap: 12px;
-    align-items: start;
-  }
-
-  #gg-grid-{{ section.id }} .gg-modal__img{
-    width: 90px;
-    height: 90px;
-    object-fit: cover;
-    display: block;
-    background: #f2f2f2;
-  }
-
-  #gg-grid-{{ section.id }} .gg-modal__title{
-    font-size: 12px;
-    font-weight: 600;
-    color: #111;
-    margin: 0 0 6px;
-  }
-
-  #gg-grid-{{ section.id }} .gg-modal__price{
-    font-size: 12px;
-    color: #111;
-    margin: 0 0 8px;
-  }
-
-  #gg-grid-{{ section.id }} .gg-modal__desc{
-    font-size: 11px;
-    color: #333;
-    line-height: 1.35;
-    margin: 0 0 10px;
-  }
-
-  /* Options */
-  #gg-grid-{{ section.id }} .gg-modal__opts{
-    margin-top: 6px;
-  }
-
-  #gg-grid-{{ section.id }} .gg-opt{
-    margin: 0 0 10px;
-  }
-
-  #gg-grid-{{ section.id }} .gg-opt__label{
-    font-size: 11px;
-    color: #111;
-    margin: 0 0 6px;
-  }
-
-  /* =========================
-     COLOR SEGMENTED (UPDATED)
-     - 2 columns like screenshot
-     - if more than 2 values, wraps into rows of 2 with inner borders
-  ========================= */
-  #gg-grid-{{ section.id }} .gg-seg{
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0;
-    border: 1px solid rgba(0,0,0,.25);
-    background: #fff;
-  }
-
-  #gg-grid-{{ section.id }} .gg-seg__btn{
-    height: 32px;
-    border: 0;
-    background: #fff;
-    cursor: pointer;
-    font-size: 11px;
-    color: #111;
-    box-shadow: inset 0 0 0 0 rgba(0,0,0,0);
-  }
-
-  /* vertical inner lines */
-  #gg-grid-{{ section.id }} .gg-seg__btn:nth-child(2n){
-    border-left: 1px solid rgba(0,0,0,.25);
-  }
-
-  /* horizontal inner lines (from 3rd item onward) */
-  #gg-grid-{{ section.id }} .gg-seg__btn:nth-child(n+3){
-    border-top: 1px solid rgba(0,0,0,.25);
-  }
-
-  #gg-grid-{{ section.id }} .gg-seg__btn.is-active{
-    background: #f5f6f7;
-    box-shadow: inset 0 0 0 2px #000;
-  }
-
-  /* Select dropdown with caret */
-  #gg-grid-{{ section.id }} .gg-select{
-    position: relative;
-    border: 1px solid rgba(0,0,0,.25);
-    height: 32px;
-    background: #fff;
-  }
-
-  #gg-grid-{{ section.id }} .gg-select__el{
-    width: 100%;
-    height: 100%;
-    border: 0;
-    background: transparent;
-    padding: 0 34px 0 10px;
-    font-size: 11px;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-  }
-
-  #gg-grid-{{ section.id }} .gg-select__caret{
-    position: absolute;
-    right: 10px;
+  /* Modal */
+  #gg-product-grid-popup-{{ section.id }} .gg-popup-modal {
+    position: fixed;
     top: 50%;
-    transform: translateY(-52%);
-    font-size: 12px;
-    color: #111;
-    pointer-events: none;
+    left: 50%;
+    width: min(100% - 32px, var(--gg-popup-max-width, 1200px));
+    max-height: min(85vh, 900px);
+    overflow: auto;
+
+    transform: translate(-50%, -50%) scale(.98);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s ease, transform .25s ease, visibility .25s ease;
+
+    z-index: 70;
+
+    /* setting "color" aplicado acá */
+    background: {{ section.settings.color }};
+    border-radius: 12px;
+    padding: 22px;
   }
 
-  /* CTA */
-  #gg-grid-{{ section.id }} .gg-modal__cta{
-    margin-top: 8px;
-    width: 100%;
-    height: 40px;
-    border: 0;
-    background: #000;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    font-size: 12px;
-    cursor: pointer;
-    display: flex;
+  /* Estado abierto */
+  #gg-product-grid-popup-{{ section.id }}.is-open .gg-popup-overlay,
+  #gg-product-grid-popup-{{ section.id }}.is-open .gg-popup-modal {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #gg-product-grid-popup-{{ section.id }}.is-open .gg-popup-modal {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  /* Close */
+  #gg-product-grid-popup-{{ section.id }} .gg-popup-close {
+    position: sticky;
+    top: 0;
+    margin-left: auto;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+
+    width: 40px;
+    height: 40px;
+
+    border: 0;
+    background: transparent;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  /* Header */
+  #gg-product-grid-popup-{{ section.id }} .gg-popup-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 12px;
+    margin-bottom: 12px;
   }
 
-  #gg-grid-{{ section.id }} .gg-modal__cta[disabled]{
-    opacity: .6;
-    cursor: not-allowed;
-  }
-
-  #gg-grid-{{ section.id }} .gg-modal__cta-arrow{
-    display: inline-block;
-    transform: translateX(0);
-    transition: transform 140ms ease;
-  }
-
-  #gg-grid-{{ section.id }} .gg-modal__cta:hover .gg-modal__cta-arrow{
-    transform: translateX(4px);
-  }
-
-  #gg-grid-{{ section.id }} .gg-modal__msg{
-    margin-top: 8px;
-    font-size: 11px;
-    min-height: 14px;
-  }
-
-  /* Responsive */
-  @media (max-width: 900px){
-    #gg-grid-{{ section.id }} .gg-grid__wrap{
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    #gg-grid-{{ section.id }} .gg-modal__panel{
-      width: min(340px, calc(100vw - 24px));
-      top: 16px;
-    }
+  #gg-product-grid-popup-{{ section.id }} .gg-popup-modal__title {
+    margin: 0;
+    font-size: 18px;
   }
 </style>
+
+{% comment %}
+  JS: abre/cierra popup
+  - Cierra con overlay click
+  - Cierra con ESC
+{% endcomment %}
+<script>
+  (() => {
+    const section = document.getElementById('gg-product-grid-popup-{{ section.id }}');
+    if (!section) return;
+
+    const openBtn = section.querySelector('[data-gg-popup-open]');
+    const closeBtn = section.querySelector('[data-gg-popup-close]');
+    const overlay = section.querySelector('[data-gg-popup-overlay]');
+
+    const open = () => section.classList.add('is-open');
+    const close = () => section.classList.remove('is-open');
+
+    openBtn?.addEventListener('click', () => {
+      if (openBtn.hasAttribute('disabled')) return;
+      open();
+    });
+
+    closeBtn?.addEventListener('click', close);
+    overlay?.addEventListener('click', close);
+
+    document.addEventListener('keydown', (e) => {
+      if (!section.classList.contains('is-open')) return;
+      if (e.key === 'Escape') close();
+    });
+  })();
+</script>
 
 {% schema %}
 {
   "name": "GG Product Grid Popup",
   "settings": [
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Tisso vison in the wild" },
-    { "type": "range", "id": "max_width", "label": "Max width (px)", "min": 900, "max": 1600, "step": 10, "default": 1200 },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Tisso vison in the wild"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Ver productos"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max width (px)",
+      "min": 600,
+      "max": 1400,
+      "step": 50,
+      "default": 1200
+    },
 
-    { "type": "header", "content": "Products" },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "background-1"
+    },
+
+    {
+      "type": "color",
+      "id": "color",
+      "label": "Color",
+      "default": "#ffffff"
+    },
+
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "options": [
+        { "value": "square", "label": "Square" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "landscape", "label": "Landscape" }
+      ],
+      "default": "square",
+      "label": "Image ratio"
+    },
+    {
+      "type": "select",
+      "id": "image_shape",
+      "options": [
+        { "value": "default", "label": "Default" },
+        { "value": "blob", "label": "Blob" }
+      ],
+      "default": "default",
+      "label": "Image shape"
+    },
+
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "default": true,
+      "label": "Show secondary image"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "default": false,
+      "label": "Show vendor"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "default": false,
+      "label": "Show rating"
+    },
+
+    {
+      "type": "select",
+      "id": "quick_add",
+      "label": "Quick add",
+      "default": "none",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "standard", "label": "Standard" },
+        { "value": "bulk", "label": "Bulk" }
+      ]
+    },
+
     { "type": "product", "id": "product_1", "label": "Product 1" },
     { "type": "product", "id": "product_2", "label": "Product 2" },
     { "type": "product", "id": "product_3", "label": "Product 3" },
     { "type": "product", "id": "product_4", "label": "Product 4" },
     { "type": "product", "id": "product_5", "label": "Product 5" },
-    { "type": "product", "id": "product_6", "label": "Product 6" },
-
-    { "type": "header", "content": "Bundle rule (optional)" },
-    {
-      "type": "product",
-      "id": "bundle_product",
-      "label": "Soft Winter Jacket (auto-add product)",
-      "info": "If selected variant includes Black + Medium, this product will also be added (first available variant)."
-    },
-
-    { "type": "header", "content": "Spacing" },
-    { "type": "range", "id": "padding_top", "label": "Padding top (px)", "min": 0, "max": 100, "step": 4, "default": 24 },
-    { "type": "range", "id": "padding_bottom", "label": "Padding bottom (px)", "min": 0, "max": 100, "step": 4, "default": 24 }
+    { "type": "product", "id": "product_6", "label": "Product 6" }
   ],
   "presets": [
     { "name": "GG Product Grid Popup" }
