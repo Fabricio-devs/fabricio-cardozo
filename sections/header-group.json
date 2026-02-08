@@ -1,1 +1,66 @@
-{"name":"t:sections.header.name","type":"header","sections":{"announcement-bar":{"type":"announcement-bar","blocks":{"announcement-bar-0":{"type":"announcement","settings":{"text":"Welcome to our store","link":""}}},"block_order":["announcement-bar-0"],"settings":{"auto_rotate":false,"change_slides_speed":5,"color_scheme":"scheme-1","show_line_separator":true,"show_social":false,"enable_country_selector":false,"enable_language_selector":false}},"header":{"type":"header","settings":{"logo_position":"middle-left","mobile_logo_position":"center","menu":"main-menu","menu_type_desktop":"dropdown","sticky_header_type":"on-scroll-up","show_line_separator":true,"color_scheme":"scheme-1","menu_color_scheme":"scheme-1","enable_country_selector":true,"enable_language_selector":true,"enable_customer_avatar":true,"margin_bottom":0,"padding_top":20,"padding_bottom":20}}},"order":["announcement-bar","header"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "name": "t:sections.header.name",
+  "type": "header",
+  "sections": {
+    "header": {
+      "type": "header",
+      "disabled": true,
+      "settings": {
+        "logo_position": "middle-left",
+        "mobile_logo_position": "center",
+        "menu": "main-menu",
+        "menu_type_desktop": "dropdown",
+        "sticky_header_type": "on-scroll-up",
+        "show_line_separator": true,
+        "color_scheme": "scheme-1",
+        "menu_color_scheme": "scheme-1",
+        "enable_country_selector": true,
+        "enable_language_selector": true,
+        "enable_customer_avatar": true,
+        "margin_bottom": 0,
+        "padding_top": 20,
+        "padding_bottom": 20
+      }
+    },
+    "gift_guide_banner_xibi6j": {
+      "type": "gift-guide-banner",
+      "name": "GG Banner",
+      "settings": {
+        "max_width": 1440,
+        "pad_x": 24,
+        "pad_y": 18,
+        "brand": "TISSO VISON",
+        "tagline": "Find the ideal gift for your loved ones.",
+        "choose_text": "CHOOSE GIFT",
+        "choose_link": "",
+        "choose_bg": "#E7D84B",
+        "title": "The Gift Guide",
+        "description": "Discover Joy: Your Ultimate Holiday Gift Destination.\nExplore our curated selection and find the perfect gifts to delight your loved ones this holiday season.",
+        "shop_text": "SHOP NOW",
+        "shop_link": "",
+        "footer_text": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL",
+        "page_bg": "#FFFFFF",
+        "top_image": "shopify://shop_images/Frame_2.png",
+        "top_image_alt": "Gift guide banner image",
+        "top_image_height": 390,
+        "bottom_image": "shopify://shop_images/Frame_1.png",
+        "bottom_image_alt": "Gift guide secondary image",
+        "bottom_image_width": 890,
+        "bottom_image_height": 402
+      }
+    }
+  },
+  "order": [
+    "header",
+    "gift_guide_banner_xibi6j"
+  ]
+}
