@@ -297,14 +297,17 @@
   /* ===========================================================
      FOOTER LINE
   =========================================================== */
-  #gg-banner-{{ section.id }} .gg-footerline{
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 10px;
+    #gg-banner-{{ section.id }} .gg-footerline{
+    position: relative;        
+    left: auto;               
+    transform: none;          
+    bottom: auto;            
+
     width: 100%;
-    padding: 0 12px;
+    margin-top: 10px;         
+    padding: 0 12px 10px;     
     text-align: center;
+
     font-size: 10px;
     letter-spacing: .12em;
     text-transform: uppercase;
@@ -312,8 +315,9 @@
     opacity: .9;
     z-index: 2;
     pointer-events: none;
-    background-color: #f5f6f7;
-  }
+    background: #f5f6f7;   
+    }
+
 
   /* ===========================================================
      BUTTONS (tilt + shadow + hover)
