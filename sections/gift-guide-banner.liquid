@@ -11,6 +11,18 @@
 ===========================================================
 {% endcomment %}
 
+{% liquid
+  assign gg_choose_href = section.settings.choose_link
+  if gg_choose_href == blank
+    assign gg_choose_href = routes.all_products_collection_url
+  endif
+
+  assign gg_shop_href = section.settings.shop_link
+  if gg_shop_href == blank
+    assign gg_shop_href = routes.all_products_collection_url
+  endif
+%}
+
 <section
   class="gg-banner"
   id="gg-banner-{{ section.id }}"
@@ -41,9 +53,9 @@
       </div>
 
       <div class="gg-topbar__right">
-        <a class="gg-btn gg-btn--choose gg-btn--tilt" href="{{ section.settings.choose_link }}">
-          <span class="gg-btn__label">{{ section.settings.choose_text }}</span>
-          <span class="gg-btn__arrow" aria-hidden="true">→</span>
+        <a class="gg-btn gg-btn--choose gg-btn--tilt" href="{{ gg_choose_href }}">
+        <span class="gg-btn__label">{{ section.settings.choose_text }}</span>
+        <span class="gg-btn__arrow" aria-hidden="true">→</span>
         </a>
       </div>
     </div>
@@ -110,9 +122,9 @@
           {{ section.settings.description }}
         </p>
 
-        <a class="gg-btn gg-btn--shop gg-btn--tilt" href="{{ section.settings.shop_link }}">
-          <span class="gg-btn__label">{{ section.settings.shop_text }}</span>
-          <span class="gg-btn__arrow" aria-hidden="true">→</span>
+        <a class="gg-btn gg-btn--shop gg-btn--tilt" href="{{ gg_shop_href }}">
+        <span class="gg-btn__label">{{ section.settings.shop_text }}</span>
+        <span class="gg-btn__arrow" aria-hidden="true">→</span>
         </a>
       </div>
 
