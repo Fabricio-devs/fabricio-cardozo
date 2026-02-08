@@ -1,0 +1,479 @@
+{%- comment -%}
+====================================================
+SECTION: Gift Guide Banner (Custom - from scratch)
+FILE: /sections/gg-gift-guide-banner.liquid
+
+WHAT THIS DOES
+- Pixel-style hero/banner based on the Figma reference
+- ALL red-rectangle texts are editable from the Shopify customizer
+- Two buttons: "SHOP NOW" and "CHOOSE GIFT" with the requested skew/hover animation
+- Responsive (mobile) layout included
+- No Dawn ready-made sections/components used
+
+HOW TO USE
+1) Create this file: sections/gg-gift-guide-banner.liquid
+2) Add it to a page template (templates/page.<name>.json) or via Theme Editor "Add section"
+3) Upload your background image in the section settings (or paste an external URL)
+
+NOTES
+- Use vanilla CSS only.
+- If your Figma uses a specific font, set it in settings or adjust the font-family below.
+====================================================
+{%- endcomment -%}
+
+<section
+  class="gg-banner"
+  style="
+    --gg-accent: {{ section.settings.accent_color }};
+    --gg-btn: {{ section.settings.btn_bg }};
+    --gg-btn-text: {{ section.settings.btn_text }};
+    --gg-btn-shadow: {{ section.settings.btn_shadow }};
+  "
+>
+  {%- comment -%} ====== BACKGROUND IMAGE LAYER (sketch background) ====== {%- endcomment -%}
+  <div class="gg-bg" aria-hidden="true">
+    {%- if section.settings.bg_image != blank -%}
+      {{
+        section.settings.bg_image
+        | image_url: width: 2400
+        | image_tag:
+          loading: 'lazy',
+          class: 'gg-bg__img',
+          alt: ''
+      }}
+    {%- elsif section.settings.bg_image_url != blank -%}
+      <img class="gg-bg__img" src="{{ section.settings.bg_image_url | escape }}" alt="" loading="lazy">
+    {%- else -%}
+      {%- comment -%}
+      If no image is provided, we show a neutral background so layout is still visible.
+      {%- endcomment -%}
+      <div class="gg-bg__fallback"></div>
+    {%- endif -%}
+  </div>
+
+  <div class="gg-container">
+    {%- comment -%} ====== TOP BAR (TISSO VISON / Tagline / Choose Gift) ====== {%- endcomment -%}
+    <div class="gg-top">
+      <div class="gg-brand">{{ section.settings.brand }}</div>
+
+      <div class="gg-tagline">{{ section.settings.tagline }}</div>
+
+      {%- if section.settings.choose_url != blank -%}
+        <a class="gg-btn gg-btn--accent" href="{{ section.settings.choose_url }}">
+          <span class="gg-btn__text">{{ section.settings.choose_text }}</span>
+          <span class="gg-btn__arrow" aria-hidden="true">→</span>
+        </a>
+      {%- else -%}
+        <div class="gg-btn gg-btn--accent gg-btn--disabled" aria-disabled="true">
+          <span class="gg-btn__text">{{ section.settings.choose_text }}</span>
+          <span class="gg-btn__arrow" aria-hidden="true">→</span>
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} ====== MAIN HERO CONTENT (Title / Description / Shop Now) ====== {%- endcomment -%}
+    <div class="gg-hero">
+      <h1 class="gg-title">{{ section.settings.title }}</h1>
+
+      <p class="gg-desc">{{ section.settings.description }}</p>
+
+      {%- if section.settings.shop_url != blank -%}
+        <a class="gg-btn gg-btn--dark" href="{{ section.settings.shop_url }}">
+          <span class="gg-btn__text">{{ section.settings.shop_text }}</span>
+          <span class="gg-btn__arrow" aria-hidden="true">→</span>
+        </a>
+      {%- else -%}
+        <div class="gg-btn gg-btn--dark gg-btn--disabled" aria-disabled="true">
+          <span class="gg-btn__text">{{ section.settings.shop_text }}</span>
+          <span class="gg-btn__arrow" aria-hidden="true">→</span>
+        </div>
+      {%- endif -%}
+    </div>
+
+    {%- comment -%} ====== FOOTER TEXT (Bottom line) ====== {%- endcomment -%}
+    <div class="gg-footer">
+      {{ section.settings.footer_text }}
+    </div>
+  </div>
+
+  {%- comment -%}
+  ====================================================
+  STYLES
+  - Kept inside section to avoid global conflicts
+  - Uses CSS variables for easy color tweaking
+  ====================================================
+  {%- endcomment -%}
+  <style>
+    /* =========================
+       BASE / LAYOUT
+       ========================= */
+    .gg-banner {
+      position: relative;
+      overflow: hidden;
+      background: #f5f5f5;
+      min-height: 680px; /* desktop feel */
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", sans-serif;
+      color: #111;
+    }
+
+    .gg-container {
+      position: relative;
+      z-index: 2;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 18px 22px 18px;
+    }
+
+    /* Background layer */
+    .gg-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .gg-bg__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: contrast(1.02);
+    }
+
+    .gg-bg__fallback {
+      width: 100%;
+      height: 100%;
+      background:
+        linear-gradient(180deg, #fafafa 0%, #f2f2f2 100%);
+    }
+
+    /* Subtle overlay for readability (Figma looks clean, keep it light) */
+    .gg-banner::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.15) 65%, rgba(255,255,255,0.25) 100%);
+    }
+
+    /* =========================
+       TOP BAR
+       ========================= */
+    .gg-top {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 4px 0 8px;
+    }
+
+    .gg-brand {
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .gg-tagline {
+      text-align: center;
+      font-size: 12px;
+      color: rgba(17, 17, 17, 0.85);
+    }
+
+    /* =========================
+       HERO CONTENT
+       ========================= */
+    .gg-hero {
+      max-width: 520px; /* left block in Figma */
+      padding-top: 110px; /* push down like the reference */
+    }
+
+    .gg-title {
+      margin: 0 0 18px;
+      font-size: 64px;
+      line-height: 0.95;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .gg-desc {
+      margin: 0 0 22px;
+      max-width: 52ch;
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(17, 17, 17, 0.8);
+    }
+
+    /* =========================
+       BUTTONS (requested animation)
+       - Skewed base
+       - Hover: lift + slight skew change + stronger shadow
+       ========================= */
+    .gg-btn {
+      --skew: -12deg;
+      --skew-hover: -10deg;
+
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+
+      padding: 14px 18px;
+      border: 1px solid rgba(0,0,0,0.18);
+      text-decoration: none;
+      user-select: none;
+
+      transform: skewX(var(--skew));
+      transition:
+        transform 220ms ease,
+        box-shadow 220ms ease,
+        background-color 220ms ease,
+        border-color 220ms ease;
+
+      box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+    }
+
+    .gg-btn__text,
+    .gg-btn__arrow {
+      display: inline-block;
+      transform: skewX(calc(var(--skew) * -1)); /* unskew text to keep it straight */
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+
+    .gg-btn__arrow {
+      font-size: 16px;
+      line-height: 1;
+      margin-top: -1px;
+    }
+
+    .gg-btn--dark {
+      background: #111;
+      color: #fff;
+      border-color: rgba(0,0,0,0.35);
+      box-shadow: 0 3px 0 rgba(0,0,0,0.45);
+    }
+
+    .gg-btn--accent {
+      background: var(--gg-btn, #f3e04a);
+      color: var(--gg-btn-text, #111);
+      border-color: rgba(0,0,0,0.22);
+      box-shadow: 0 3px 0 var(--gg-btn-shadow, rgba(0,0,0,0.28));
+    }
+
+    .gg-btn:hover {
+      transform: translateY(-2px) skewX(var(--skew-hover));
+      box-shadow: 0 8px 0 rgba(0,0,0,0.20);
+    }
+
+    .gg-btn--dark:hover {
+      box-shadow: 0 8px 0 rgba(0,0,0,0.35);
+    }
+
+    .gg-btn:active {
+      transform: translateY(0px) skewX(var(--skew));
+      box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+    }
+
+    .gg-btn--disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* =========================
+       FOOTER TEXT
+       ========================= */
+    .gg-footer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 10px;
+      z-index: 2;
+
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(17,17,17,0.55);
+      padding: 0 18px;
+      pointer-events: none;
+    }
+
+    /* =========================
+       RESPONSIVE (MOBILE)
+       ========================= */
+    @media (max-width: 749px) {
+      .gg-banner {
+        min-height: auto;
+      }
+
+      .gg-container {
+        padding: 14px 16px 54px;
+      }
+
+      .gg-top {
+        grid-template-columns: auto auto;
+        grid-template-areas:
+          "brand choose"
+          "tagline tagline";
+        gap: 10px 12px;
+      }
+
+      .gg-brand { grid-area: brand; }
+      .gg-tagline {
+        grid-area: tagline;
+        font-size: 11px;
+        text-align: left;
+        opacity: 0.85;
+      }
+
+      .gg-btn--accent { grid-area: choose; }
+
+      .gg-hero {
+        padding-top: 18px;
+        max-width: 100%;
+      }
+
+      .gg-title {
+        font-size: 44px;
+        line-height: 1.0;
+        margin-bottom: 12px;
+      }
+
+      .gg-desc {
+        font-size: 13px;
+        margin-bottom: 16px;
+      }
+
+      .gg-footer {
+        bottom: 8px;
+        font-size: 10px;
+      }
+    }
+  </style>
+</section>
+
+{% schema %}
+{
+  "name": "GG - Gift Guide Banner",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Top bar"
+    },
+    {
+      "type": "text",
+      "id": "brand",
+      "label": "Brand (left)",
+      "default": "TISSO VISON"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Tagline (center)",
+      "default": "Find the ideal gift for your loved ones."
+    },
+    {
+      "type": "text",
+      "id": "choose_text",
+      "label": "Choose Gift button text",
+      "default": "CHOOSE GIFT"
+    },
+    {
+      "type": "url",
+      "id": "choose_url",
+      "label": "Choose Gift button link"
+    },
+
+    {
+      "type": "header",
+      "content": "Hero content"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "The Gift Guide"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season."
+    },
+    {
+      "type": "text",
+      "id": "shop_text",
+      "label": "Shop Now button text",
+      "default": "SHOP NOW"
+    },
+    {
+      "type": "url",
+      "id": "shop_url",
+      "label": "Shop Now button link"
+    },
+
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "image_picker",
+      "id": "bg_image",
+      "label": "Background image (recommended)"
+    },
+    {
+      "type": "text",
+      "id": "bg_image_url",
+      "label": "Background image URL (optional)",
+      "info": "Use this only if you can't upload an image in the picker."
+    },
+
+    {
+      "type": "header",
+      "content": "Footer"
+    },
+    {
+      "type": "text",
+      "id": "footer_text",
+      "label": "Footer text",
+      "default": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
+    },
+
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color",
+      "default": "#f3e04a"
+    },
+    {
+      "type": "color",
+      "id": "btn_bg",
+      "label": "Choose Gift button background",
+      "default": "#f3e04a"
+    },
+    {
+      "type": "color",
+      "id": "btn_text",
+      "label": "Choose Gift button text color",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "btn_shadow",
+      "label": "Choose Gift button shadow color",
+      "default": "#000000"
+    }
+  ],
+  "presets": [
+    {
+      "name": "GG - Gift Guide Banner"
+    }
+  ]
+}
+{% endschema %}
