@@ -139,7 +139,7 @@
      BASE WRAPPER
   =========================================================== */
   #gg-banner-{{ section.id }}{
-    background: var(--gg-page-bg);
+    background: #f5f6f7; /* REQUIRED */
     color: #000;
   }
 
@@ -148,7 +148,7 @@
   =========================================================== */
   #gg-banner-{{ section.id }} .gg-topbar{
     padding: 14px 0;
-    background: #f5f6f7;
+    background: #f5f6f7; /* REQUIRED */
   }
 
   #gg-banner-{{ section.id }} .gg-topbar__inner{
@@ -187,6 +187,7 @@
      CANVAS WRAPPER
   =========================================================== */
   #gg-banner-{{ section.id }} .gg-canvas{
+    background: #f5f6f7; /* REQUIRED */
     padding: var(--gg-pad-y) 0 calc(var(--gg-pad-y) + 18px);
     position: relative;
   }
@@ -194,12 +195,14 @@
   #gg-banner-{{ section.id }} .gg-canvas__inner{
     max-width: var(--gg-max-width);
     margin: 0 auto;
-    padding: var(--gg-pad-y) 0 calc(var(--gg-pad-y) + 140px);
+    padding: 0 var(--gg-pad-x);  /* FIX: restore horizontal padding */
     position: relative;
 
-    /* Important: reserve vertical space so bottom overlay has room */
-    min-height: calc(var(--gg-top-h) + 26px + var(--gg-bottom-h) + 40px);
-    padding-bottom: 40px;
+    /* Reserve real space for footer so it doesn't overlap */
+    padding-bottom: 44px;
+
+    /* Enough height for top band + overlay + footer reserved space */
+    min-height: calc(var(--gg-top-h) + 26px + var(--gg-bottom-h) + 44px);
   }
 
   /* ===========================================================
@@ -229,11 +232,6 @@
   #gg-banner-{{ section.id }} .gg-img--bottom{
     position: absolute;
     right: 0;
-
-    /* === FIX: anchor to the TOP of the lower area (not the bottom) ===
-       This matches the Figma layout where the lower image sits top-right
-       next to the heading, instead of drifting down.
-    */
     top: calc(var(--gg-top-h) + 26px);
 
     width: min(var(--gg-bottom-w), 62%);
@@ -290,28 +288,29 @@
 
   /* ===========================================================
      FOOTER LINE
+     - stays at the bottom of the INNER container
+     - band background so it is always readable
   =========================================================== */
-    #gg-banner-{{ section.id }} .gg-footerline{
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: 10px;
+  #gg-banner-{{ section.id }} .gg-footerline{
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 10px;
 
-        width: 100%;
-        padding: 0 12px;
-        text-align: center;
+    width: 100%;
+    padding: 8px 12px;
+    text-align: center;
 
-        font-size: 10px;
-        letter-spacing: .12em;
-        text-transform: uppercase;
-        color: #111;
-        opacity: .9;
-        z-index: 2;
-        pointer-events: none;
-        background: transparent;
-    }
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #111;
+    opacity: .9;
+    z-index: 2;
+    pointer-events: none;
 
-
+    background: #f5f6f7; /* REQUIRED */
+  }
 
   /* ===========================================================
      BUTTONS (tilt + shadow + hover)
@@ -396,6 +395,7 @@
     #gg-banner-{{ section.id }} .gg-canvas__inner{
       min-height: auto;
       padding: 0 16px;
+      padding-bottom: 16px;
     }
 
     /* Keep the band visible on mobile */
@@ -408,7 +408,7 @@
       position: relative;
       right: auto;
       bottom: auto;
-      top: auto; /* <— IMPORTANT for the fix */
+      top: auto;
       width: 100%;
       height: 260px;
       margin-top: 14px;
@@ -423,12 +423,15 @@
       max-width: 560px;
     }
 
+    /* Footer becomes flow on mobile */
     #gg-banner-{{ section.id }} .gg-footerline{
       position: relative;
       left: auto;
       transform: none;
       bottom: auto;
       margin-top: 14px;
+      background: transparent;
+      padding: 0 12px 10px;
     }
   }
 </style>
